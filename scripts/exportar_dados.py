@@ -1,3 +1,4 @@
+import sqlite3
 import pandas as pd
 
 def exportar_clientes(conn, caminho_arquivo):
@@ -10,7 +11,7 @@ def exportar_clientes(conn, caminho_arquivo):
             c.nascimento AS "DATA DE NASCIMENTO",
             ec.descricao AS "ESTADO CIVIL",
             c.profissao AS "PROFISSÃO",
-            NULL AS "SEXO", -- Valor padrão, pois a coluna não existe no banco
+            NULL AS "SEXO", -- Valor padrão
             c.telefone2 AS "CELULAR",
             c.telefone1 AS "TELEFONE",
             c.email1 AS "EMAIL",
@@ -24,7 +25,7 @@ def exportar_clientes(conn, caminho_arquivo):
             NULL AS "CTPS", -- Valor padrão
             NULL AS "CID", -- Valor padrão
             c.nome_mae AS "NOME DA MÃE",
-            NULL AS "ORIGEM DO CLIENTE", -- Valor padrão
+            'MIGRAÇÃO' AS "ORIGEM DO CLIENTE", -- Preenchimento padrão
             c.observacoes AS "ANOTAÇÕES GERAIS"
         FROM 
             clientes c
@@ -32,14 +33,12 @@ def exportar_clientes(conn, caminho_arquivo):
             cliente_estado_civil ec ON c.cod_cliente_estado_civil = ec.codigo
         WHERE 
             c.ativo = 1;
-
     """
     df = pd.read_sql_query(query, conn)
     df.to_excel(caminho_arquivo, index=False, sheet_name="Clientes")
 
-
 def exportar_processos(conn, caminho_arquivo):
-    query = """ 
+    query = """
         SELECT 
             c.razao_social AS "NOME DO CLIENTE",
             (
@@ -62,7 +61,11 @@ def exportar_processos(conn, caminho_arquivo):
             NULL AS "PASTA", -- Valor padrão
             p.inclusao AS "DATA CADASTRO",
             p.data_encerramento AS "DATA FECHAMENTO",
-            NULL AS "DATA TRANSITO", -- Coluna substituída por valor padrão
+            (
+                SELECT MAX(r.data_julgamento) -- Substituição por coluna existente
+                FROM recurso r
+                WHERE r.codprocesso = p.codigo
+            ) AS "DATA TRANSITO",
             NULL AS "DATA ARQUIVAMENTO", -- Valor padrão
             NULL AS "DATA REQUERIMENTO", -- Valor padrão
             NULL AS "RESPONSÁVEL", -- Valor padrão
@@ -87,8 +90,6 @@ def exportar_processos(conn, caminho_arquivo):
             ) = tr.codigo
         WHERE 
             p.ativo = 1;
-
     """
     df = pd.read_sql_query(query, conn)
     df.to_excel(caminho_arquivo, index=False, sheet_name="Processos")
-
