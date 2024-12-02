@@ -1,4 +1,3 @@
 /data/imput/
 /data/output/
-consulta_banco.py
-informacoes_banco.json
+/scripts/__pycache__
