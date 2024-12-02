@@ -48,7 +48,7 @@ class MigracaoApp:
     def exportar_clientes(self):
         try:
             conn = sqlite3.connect("data/database.sqlite")
-            caminho = caminho = ("data/advbox_clientes.xlsx")
+            caminho = caminho = ("data/output/advbox_clientes.xlsx")
             if caminho:
                 exportar_clientes(conn, caminho)
                 messagebox.showinfo("Sucesso", "Clientes exportados com sucesso!")
@@ -58,7 +58,7 @@ class MigracaoApp:
     def exportar_processos(self):
         try:
             conn = sqlite3.connect("data/database.sqlite")
-            caminho = ("data/advbox_processos.xlsx")
+            caminho = ("data/output/advbox_processos.xlsx")
             if caminho:
                 exportar_processos(conn, caminho)
                 messagebox.showinfo("Sucesso", "Processos exportados com sucesso!")
