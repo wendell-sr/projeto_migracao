@@ -19,13 +19,13 @@ def exportar_clientes(conn, caminho_arquivo):
             c.uf AS "ESTADO",
             c.cidade AS "CIDADE",
             c.bairro AS "BAIRRO",
-            c.logradouro || ', ' || c.numero || ' ' || c.complemento AS "ENDEREÇO",
+            c.logradouro || ', ' || COALESCE(c.numero, '') || ' ' || COALESCE(c.complemento, '') AS "ENDEREÇO",
             c.cep AS "CEP",
             c.pis AS "PIS PASEP",
             NULL AS "CTPS", -- Valor padrão
             NULL AS "CID", -- Valor padrão
             c.nome_mae AS "NOME DA MÃE",
-            'MIGRAÇÃO' AS "ORIGEM DO CLIENTE", -- Preenchimento padrão
+            NULL AS "ORIGEM DO CLIENTE", -- Valor padrão
             c.observacoes AS "ANOTAÇÕES GERAIS"
         FROM 
             clientes c
@@ -33,6 +33,7 @@ def exportar_clientes(conn, caminho_arquivo):
             cliente_estado_civil ec ON c.cod_cliente_estado_civil = ec.codigo
         WHERE 
             c.ativo = 1;
+
     """
     df = pd.read_sql_query(query, conn)
     df.to_excel(caminho_arquivo, index=False, sheet_name="Clientes")
@@ -59,10 +60,10 @@ def exportar_processos(conn, caminho_arquivo):
             p.valor_causa AS "EXPECTATIVA/VALOR DA CAUSA",
             NULL AS "VALOR HONORÁRIOS", -- Valor padrão
             NULL AS "PASTA", -- Valor padrão
-            p.inclusao AS "DATA CADASTRO",
-            p.data_encerramento AS "DATA FECHAMENTO",
+            strftime('%d/%m/%Y', p.inclusao) AS "DATA CADASTRO", -- Formato ajustado
+            strftime('%d/%m/%Y', p.data_encerramento) AS "DATA FECHAMENTO", -- Formato ajustado
             (
-                SELECT MAX(r.data_julgamento) -- Substituição por coluna existente
+                SELECT MAX(r.data_julgamento)
                 FROM recurso r
                 WHERE r.codprocesso = p.codigo
             ) AS "DATA TRANSITO",
@@ -90,6 +91,7 @@ def exportar_processos(conn, caminho_arquivo):
             ) = tr.codigo
         WHERE 
             p.ativo = 1;
+
     """
     df = pd.read_sql_query(query, conn)
     df.to_excel(caminho_arquivo, index=False, sheet_name="Processos")
