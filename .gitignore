@@ -1,3 +1,4 @@
 /data/imput/
 /data/output/
+/data/database.sqlite
 /scripts/__pycache__
